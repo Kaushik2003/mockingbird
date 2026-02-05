@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: mockingbird-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: mockingbird
+      POSTGRES_USER: mockingbird
+      POSTGRES_PASSWORD: mockingbird_password
+      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mockingbird -d mockingbird"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mockingbird-network
+
+  # Aave Risk Signal Engine
+  signal-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mockingbird-signal-engine
+    restart: on-failure:5
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://mockingbird:mockingbird_password@postgres:5432/mockingbird
+      WALLET_ADDRESS: ${WALLET_ADDRESS:-0x249d918Aa474DAc284d67BB7A3c02c0f3Fe86ce8}
+      POLL_INTERVAL_MS: ${POLL_INTERVAL_MS:-5000}
+      BUFFER_SIZE: ${BUFFER_SIZE:-120}
+      RETENTION_DAYS: ${RETENTION_DAYS:-7}
+    networks:
+      - mockingbird-network
+    # Uncomment if you add WebSocket support later
+    # ports:
+    #   - "4002:4002"
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  mockingbird-network:
+    driver: bridge
