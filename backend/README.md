@@ -33,7 +33,7 @@ The easiest way to run the service is using Docker Compose, which automatically 
 ### 1. Configure Environment
 
 ```bash
-cp .env.docker .env
+cp .env.example .env
 ```
 
 Edit `.env` to set your wallet address:
