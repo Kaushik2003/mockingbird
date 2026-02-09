@@ -50,3 +50,25 @@ COMMENT ON COLUMN wallet_snapshots.health_factor IS 'Aave health factor (liquida
 COMMENT ON COLUMN wallet_snapshots.supplies_json IS 'Array of supply positions with full details';
 COMMENT ON COLUMN wallet_snapshots.borrows_json IS 'Array of borrow positions with full details';
 COMMENT ON COLUMN wallet_snapshots.market_state_json IS 'Complete MarketUserState object for debugging';
+
+-- Users table
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  identity_commitment TEXT UNIQUE NOT NULL, -- Merkle Tree leaf/Identity Hash
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  metadata JSONB -- Optional: Store anon-aadhaar proof details if needed for demo
+);
+
+-- Agents table
+CREATE TABLE IF NOT EXISTS agents (
+  id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES users(id),
+  wallet_address TEXT UNIQUE NOT NULL,
+  private_key TEXT NOT NULL, -- Encrypted or plain for local demo
+  status TEXT DEFAULT 'active', -- active, paused, stopped
+  risk_config JSONB DEFAULT '{}', -- Custom risk parameters per agent
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Index for quick lookups
+CREATE INDEX IF NOT EXISTS idx_agents_wallet_address ON agents(wallet_address);

@@ -94,6 +94,7 @@ export async function closeDatabase(): Promise<void> {
  */
 export async function runMigrations(maxRetries: number = 5): Promise<void> {
   const schemaSQL = `
+    -- Wallet Snapshots
     CREATE TABLE IF NOT EXISTS wallet_snapshots (
       wallet_address TEXT NOT NULL,
       ts TIMESTAMPTZ NOT NULL,
@@ -120,6 +121,27 @@ export async function runMigrations(maxRetries: number = 5): Promise<void> {
 
     CREATE INDEX IF NOT EXISTS idx_wallet_snapshots_ts_only 
       ON wallet_snapshots (ts);
+
+    -- Users Table (Identity)
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      identity_commitment TEXT UNIQUE NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      metadata JSONB
+    );
+
+    -- Agents Table (Wallets)
+    CREATE TABLE IF NOT EXISTS agents (
+      id SERIAL PRIMARY KEY,
+      user_id INT REFERENCES users(id),
+      wallet_address TEXT UNIQUE NOT NULL,
+      private_key TEXT NOT NULL,
+      status TEXT DEFAULT 'active',
+      risk_config JSONB DEFAULT '{}',
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_agents_wallet_address ON agents(wallet_address);
   `;
 
   let lastError: Error | null = null;

@@ -17,6 +17,8 @@ export const AAVE_V3_MARKETS = {
   POLYGON_CORE: evmAddress("0x794a61358d6845594f94dc1db02a252b5b4814ad"),
   // Base
   BASE_CORE: evmAddress("0xa238dd80c259a72e81d7e4664a9801593f98d1c5"),
+  // Base Sepolia (Testnet) - Pool Address
+  BASE_SEPOLIA: evmAddress("0x07eA79F68B2B3df02CB3952F87d62738DD953c13"), // Aave V3 Pool on Base Sepolia
 } as const;
 
 // Chain IDs
@@ -26,6 +28,7 @@ export const CHAIN_IDS = {
   OPTIMISM: chainId(10),
   POLYGON: chainId(137),
   BASE: chainId(8453),
+  BASE_SEPOLIA: chainId(84532),
 } as const;
 
 // Default market configuration
@@ -50,5 +53,10 @@ export const DEFAULT_MARKETS: MarketConfig[] = [
     address: AAVE_V3_MARKETS.BASE_CORE,
     chainId: CHAIN_IDS.BASE,
     name: "Base Core",
+  },
+  {
+    address: AAVE_V3_MARKETS.BASE_SEPOLIA,
+    chainId: CHAIN_IDS.BASE_SEPOLIA,
+    name: "Base Sepolia",
   },
 ];
